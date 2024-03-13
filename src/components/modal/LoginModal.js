@@ -3,6 +3,7 @@ import { ModalContent, BottomModal } from 'react-native-modals';
 import PhoneInput from 'react-native-phone-number-input';
 import React, { useRef, useState } from 'react';
 import ButtonCus from '../common/ButtonCus';
+import axiosClient from '../../api/axiosClient';
 
 const LoginModal = ({ show, onPress, onTouchOutside }) => {
 	const phoneInput = useRef(null);
@@ -10,12 +11,24 @@ const LoginModal = ({ show, onPress, onTouchOutside }) => {
 	const [formattedValue, setFormattedValue] = useState('');
 	const [errorMessage, setErrorMessage] = useState('');
 
-	const handlerBtnLogin = () => {
+	const handlerBtnLogin = async () => {
 		const formattedValueRegex = /^\+\d{2,4}\d{9}$/;
 
 		if (formattedValueRegex.test(formattedValue)) {
-			onPress(formattedValue);
-			setErrorMessage('');
+			try {
+				const res = await axiosClient.get();
+				const user = res.record.users.find(
+					(u) => u.phoneNumber === formattedValue
+				);
+				if (user) {
+					setErrorMessage('');
+					onPress(user);
+				} else {
+					setErrorMessage('Số điện thoại không hợp lệ');
+				}
+			} catch (error) {
+				console.log(error);
+			}
 		} else {
 			setErrorMessage('Số điện thoại không hợp lệ');
 		}

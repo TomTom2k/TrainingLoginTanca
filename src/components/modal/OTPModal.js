@@ -7,6 +7,7 @@ const OTPModal = ({ show, to, onVerifyOTP }) => {
 	const refs = useRef([]);
 	const [otpValues, setOtpValues] = useState(['', '', '', '', '']);
 	const [focusedIndex, setFocusedIndex] = useState(0);
+	const [errorMessage, setErrorMessage] = useState('');
 	const [countdown, setCountdown] = useState(60);
 
 	const handleOtpChange = (index, value) => {
@@ -23,7 +24,8 @@ const OTPModal = ({ show, to, onVerifyOTP }) => {
 
 	const handleVerifyOTP = () => {
 		const otp = otpValues.join('');
-		onVerifyOTP(otp);
+		const errorMessage = onVerifyOTP(otp);
+		setErrorMessage(errorMessage instanceof Object ? '' : errorMessage);
 	};
 
 	useEffect(() => {
@@ -59,7 +61,7 @@ const OTPModal = ({ show, to, onVerifyOTP }) => {
 						marginBottom: 20,
 					}}
 				>
-					Nhập mã OTP gửi đến {to}
+					Nhập mã OTP gửi đến {to?.phoneNumber}
 				</Text>
 				<View
 					style={{
@@ -98,6 +100,9 @@ const OTPModal = ({ show, to, onVerifyOTP }) => {
 						/>
 					))}
 				</View>
+				<Text style={{ color: 'red', textAlign: 'center' }}>
+					{errorMessage}
+				</Text>
 				<ButtonCus onPress={handleVerifyOTP}>Đồng ý</ButtonCus>
 				<View
 					style={{

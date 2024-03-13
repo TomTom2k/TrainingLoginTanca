@@ -1,9 +1,10 @@
 import { View, ImageBackground, Image } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ButtonCus from '../components/common/ButtonCus';
 import LoginModal from '../components/modal/LoginModal';
 import OTPModal from '../components/modal/OTPModal';
 import RegisModal from '../components/modal/RegisModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AuthScreen = ({ navigation, route }) => {
 	const { isLogin } = route.params;
@@ -11,29 +12,37 @@ const AuthScreen = ({ navigation, route }) => {
 	const [showRegis, setShowRegis] = useState(!isLogin);
 	const [showOTP, setShowOTP] = useState(false);
 	const [name, setName] = useState('');
-	const [phoneNumber, setPhoneNumber] = useState('');
-	const handlerBtnLogin = (phoneFormat) => {
+	const [user, setUser] = useState(null);
+	const handlerBtnLogin = (data) => {
+		setUser(data);
 		setShowOTP(true);
 		setShowLogin(false);
-		setPhoneNumber(phoneFormat);
-		setName('');
 	};
 	const handlerBtnRegis = (data) => {
 		setShowOTP(true);
 		setShowRegis(false);
-		setPhoneNumber(data.phoneNumber);
 		setName(data.name);
+		setUser({
+			phoneNumber: data.phoneNumber,
+		});
 	};
-	const handlerBtnVerifyOTP = (data) => {
-		console.log(name);
+	const handlerBtnVerifyOTP = async (data) => {
+		let errorMessage = '';
 		if (data.length === 5) {
 			if (name) {
+				setShowOTP(false);
 				navigation.navigate('Main');
 			} else {
-				navigation.navigate('Home');
+				if (user?.OTP === data) {
+					await AsyncStorage.setItem('token', user.token);
+					setShowOTP(false);
+					navigation.navigate('Home');
+				} else {
+					errorMessage = 'OTP không trùng khớp';
+				}
 			}
-			setShowOTP(false);
 		}
+		return errorMessage;
 	};
 	const handlerOutsideLoginModal = () => {
 		setShowLogin(false);
@@ -78,7 +87,7 @@ const AuthScreen = ({ navigation, route }) => {
 			/>
 			<OTPModal
 				show={showOTP}
-				to={phoneNumber}
+				to={user}
 				onVerifyOTP={handlerBtnVerifyOTP}
 			/>
 		</ImageBackground>

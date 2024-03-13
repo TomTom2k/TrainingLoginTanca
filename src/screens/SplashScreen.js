@@ -1,21 +1,29 @@
 // SplashScreen.js
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect } from 'react';
-import {
-	View,
-	Text,
-	Image,
-	Dimensions,
-	useWindowDimensions,
-} from 'react-native';
+import { View, Image, useWindowDimensions } from 'react-native';
 
 const SplashScreen = ({ navigation }) => {
 	const { width } = useWindowDimensions();
 	useEffect(() => {
-		const timer = setTimeout(() => {
-			navigation.navigate('Carousel');
-		}, 300);
-		return () => clearTimeout(timer);
+		const checkToken = async () => {
+			try {
+				const token = await AsyncStorage.getItem('token');
+				if (token) {
+					navigation.navigate('Home');
+				} else {
+					const timer = setTimeout(() => {
+						navigation.navigate('Carousel');
+					}, 300);
+					return () => clearTimeout(timer);
+				}
+			} catch (error) {
+				console.error('Lỗi khi kiểm tra token:', error);
+			}
+		};
+
+		checkToken();
 	}, []);
 
 	return (
